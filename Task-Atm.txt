@@ -1,0 +1,487 @@
+package mypro;
+import java.util.*;
+//Atm Database
+//for Denomination
+class Denomination {
+  private int twoThousand;
+  private int fiveHundred;
+  private int oneHundred;
+
+  public Denomination() {
+  }
+
+  public Denomination(int twoThousand, int fiveHundred, int oneHundred) {
+      this.twoThousand = twoThousand;
+      this.fiveHundred = fiveHundred;
+      this.oneHundred = oneHundred;
+  }
+
+  public int getTwoThousand() {
+      return twoThousand;
+  }
+
+  public void setTwoThousand(int twoThousand) {
+      this.twoThousand = twoThousand;
+  }
+
+  public int getFiveHundred() {
+      return fiveHundred;
+  }
+
+  public void setFiveHundred(int fiveHundred) {
+      this.fiveHundred = fiveHundred;
+  }
+
+  public int getOneHundred() {
+      return oneHundred;
+  }
+
+  public void setOneHundred(int oneHundred) {
+      this.oneHundred = oneHundred;
+  }
+}
+//Customer Details
+class CustDb {
+  private  String accNum;
+  private String name;
+  private String pin;
+  private int accBal;
+  public CustDb(){
+
+  }
+  public CustDb(String accNum, String name, String pin, int accBal) {
+      this.accNum = accNum;
+      this.name = name;
+      this.pin = pin;
+      this.accBal = accBal;
+  }
+
+  public String getAccNum() {
+      return accNum;
+  }
+
+  public String getName() {
+      return name;
+  }
+
+  public String getPin() {
+      return pin;
+  }
+
+  public int getAccBal() {
+      return accBal;
+  }
+
+  public void setName(String Name) {
+      this.name = Name;
+  }
+
+  public void setPin(String pin) {
+      this.pin = pin;
+  }
+
+  public void setAccBal(int accBal) {
+      this.accBal = accBal;
+  }
+
+  public void wdraw(String accNum, int amt, TreeMap<String, CustDb> db){
+       db.get(accNum).setAccBal(getAccBal()-amt);
+  }
+
+  public void dept(String accNum, int amt, TreeMap<String, CustDb> db){
+      db.get(accNum).setAccBal(getAccBal()+amt);
+  }
+}
+class AtmDb{
+    private int bal;
+    private  int depAmt;
+    private int wdAmt;
+    public AtmDb() {
+    }
+    public AtmDb(int balAmt, int depAmt, int wdAmt) {
+        this.bal = balAmt;
+        this.depAmt = depAmt;
+        this.wdAmt = wdAmt;
+    }
+
+    public int getBalAmt() {
+        return bal;
+    }
+
+    public void setBalAmt(int balAmt) {
+        this.bal = balAmt;
+    }
+
+    public int getDepAmt() {
+        return depAmt;
+    }
+
+    public void setDepAmt(int depAmt) {
+        this.depAmt = depAmt;
+    }
+
+    public int getWdAmt() {
+        return wdAmt;
+    }
+
+    public void setWdAmt(int wdAmt) {
+        this.wdAmt = wdAmt;
+    }
+}
+
+//Atm Process
+class AtmP {
+	//credit amount to the amount
+    public static void upDenom(int amt, int denom, Denomination Denom){
+        if(amt==2000){
+                Denom.setTwoThousand(Denom.getTwoThousand()+denom);
+        }
+        else if(amt==500){
+                Denom.setFiveHundred(Denom.getFiveHundred()+denom);
+        }
+        else if(amt==100){
+                Denom.setOneHundred(Denom.getOneHundred()+denom);
+        }
+    }
+    //debit amount from the account
+    public static int reduceDenom(int amt, int denom, Denomination Denom){
+        int f1=0, f2=0;
+        if(amt==2000){
+            if(Denom.getTwoThousand()>0){
+                Denom.setTwoThousand(Denom.getTwoThousand()-denom);
+                return 1;
+            }
+            else if(Denom.getFiveHundred()>0){
+                f1=1;
+                Denom.setFiveHundred(Denom.getFiveHundred()-denom);
+            }
+            else if(Denom.getOneHundred()>0){
+                f2=1;
+                Denom.setOneHundred(Denom.getOneHundred()-denom);
+            }
+        }
+        else if(amt==500){
+            if(Denom.getFiveHundred()>0){
+                if(f1==0){
+                    Denom.setFiveHundred(Denom.getFiveHundred()-denom);
+                    return 1;
+                }
+            }
+            else if(Denom.getOneHundred()>0)
+                if(f2==0)
+                Denom.setOneHundred(Denom.getOneHundred()-denom);
+        }
+        else if(amt==100){
+            if(Denom.getOneHundred()>0){
+                if(f2==0){
+                Denom.setOneHundred(Denom.getOneHundred()-denom);
+                return 1;}
+            }
+        }
+        return -1;
+    }
+    
+    //update deposit details to the database
+    public static void upDeptAmt(AtmDb atmDb, Denomination Denom){
+        int deptAmt=Denom.getTwoThousand()*2000+Denom.getFiveHundred()*500+Denom.getOneHundred()*100;
+        atmDb.setDepAmt(deptAmt);
+        atmDb.setBalAmt(atmDb.getDepAmt());
+    }
+
+    //update withdraw details to the database
+    public static void upWithdraw(AtmDb atmDb, int wdAmt){
+        atmDb.setWdAmt(wdAmt);
+        atmDb.setBalAmt(atmDb.getBalAmt()-wdAmt);
+    }
+    
+    public static int[] disDenom(int[] temp, int wdAmt){
+        int[] tcount=new int[temp.length];
+        for(int i=0;i<temp.length;i++){
+            if(wdAmt>=temp[i]){
+                tcount[i]=wdAmt/temp[i];
+                wdAmt=wdAmt-tcount[i]*temp[i];
+            }
+        }
+        return tcount;
+    }
+
+}
+class Cust {
+	
+	//check if the holder accnum is correct or not
+    public boolean validAccNum(String accNum, TreeMap<String, CustDb> db){
+        if(accNum.equals(db.get(accNum).getAccNum())){
+            return true;
+        }
+        return false;
+    }
+    
+    //check if the holder pin is correct or not
+    public boolean validPin(String accNum, String pin, TreeMap<String, CustDb> db){
+        if(pin.equals(db.get(accNum).getPin())){
+            return true;
+        }
+        return false;
+    }
+    
+    //transfer one account to another 
+    public void transAmt(String fromAcc, String toAcc, int amt, TreeMap<String, CustDb> db){
+        db.get(fromAcc).wdraw(fromAcc, amt, db);
+        db.get(toAcc).dept(toAcc, amt, db);
+    }
+}
+
+//Main method
+public class myatm {
+    public static void main(String[] args) {
+    	Scanner sc=new Scanner(System.in);
+    	TreeMap<String, CustDb> db=new TreeMap<>();
+    	AtmDb aDb=new AtmDb();
+        Cust cust=new Cust();
+        AtmP atm=new AtmP();
+        
+        Denomination denom=new Denomination();
+        int[] notes=new int[]{2000, 500, 100};
+        
+        try {
+            while (true){
+                int ch=0;
+                System.out.println("==============");
+                System.out.println("1.Atm Process\n2.Bank Process");
+                System.out.println("if you haven't any account plz enter 2");
+                System.out.println("==============");
+                int ch1=sc.nextInt();
+                
+                //choose atm process(load Atm,withdraw,..) or bank process(create acc,tranfer money,...)
+                switch(ch1) {
+	                case 1:{
+	                	System.out.println("==============");
+	                	System.out.println("1. Load ATM\n2. Withdraw From ATM\n3. Check ATM Balance\n");
+	                	System.out.println("==============");
+	                	System.out.println("Enter the Number  : ");
+	                	int ch2=sc.nextInt();
+	                	sc.nextLine();
+	                	
+	                	//cases for Atm process
+	                	switch(ch2) {
+	                	//load Atm
+	                	case 1:
+	                	{
+	                    System.out.println("============================= Load ATM ==============================");
+	                    System.out.println("Enter the Denomination to deposit(2000:count,500:count,100:count ) : ");
+	                    System.out.println("=====================================================================");
+	                    String[] denomin=sc.nextLine().split(",");
+	                    int f=1;
+	                    for(String sep:denomin){
+	                        String[] values=sep.split(":");
+	                        int amt=Integer.valueOf(values[0].trim());
+	                        int denomination=Integer.valueOf(values[1]);
+	                        if(amt<0||denomination<0){
+	                            System.out.println("Incorrect amount");
+	                        }
+	                        else if (amt==0||denomination==0){
+	                            System.out.println("Amount cannot be Zero");
+	                        }
+	                        else{
+	                            atm.upDenom(amt, denomination, denom);
+	                        }
+	                    }
+	
+	                        atm.upDeptAmt(aDb, denom);
+	
+	                    System.out.println("============================================");
+	                    System.out.println("Denomination            Number  Value       ");
+	                    System.out.println("2000                    "+denom.getTwoThousand()+"       "+2000*denom.getTwoThousand());
+	                    System.out.println("500                     "+denom.getFiveHundred()+"       "+500*denom.getFiveHundred());
+	                    System.out.println("100                     "+denom.getOneHundred()+"       "+100*denom.getOneHundred());
+	                    System.out.println("----------------------------------------------");
+	                    System.out.println("Total Amount : "+denom.getFiveHundred()+denom.getOneHundred()+denom.getTwoThousand());
+	                    System.out.println("==============================================");
+	                    break;
+	                }
+	                	//Withdraw money from atm
+	                case 2:
+	                {
+	                    System.out.println("====== Withdraw ===========");
+	                    System.out.println("Enter the Account Number : ");
+	                    String accNum=sc.next();
+	                    System.out.println("Enter the Pin Number : ");
+	                    String pin=sc.next();
+	                    if(cust.validAccNum(accNum, db)&&cust.validPin(accNum, pin, db)){
+	                        System.out.println("Enter the amount : ");
+	                        int wdAmt=sc.nextInt();
+	                        if(wdAmt<=0||wdAmt>aDb.getBalAmt()){
+	                            System.out.println("Incorrect or Insufficient Money");
+	                            break;
+	                        }
+	                        else if(db.get(accNum).getAccBal()>10000||db.get(accNum).getAccBal()<100){
+	                            System.out.println("maximum 10000 and minimum 100 Should be withdraw");break;
+	                        }
+	                        db.get(accNum).wdraw(accNum, wdAmt, db);
+	                        int flag=1;
+	                        int[] disDenom=atm.disDenom(notes, wdAmt);
+	                        for(int i=0;i< notes.length;i++){
+	                            if(disDenom[i]>0){
+	                                flag=atm.reduceDenom(notes[i], disDenom[i], denom);
+	                            }
+	                        }
+	                        System.out.println();
+	                        if(flag==1)
+	                            atm.upWithdraw(aDb, wdAmt);
+	                        else {
+	                            System.out.println("No Available Denomination");
+	                            break;
+	                        }
+	                    }
+	                    else{
+	                        System.out.println("Invalid Acoount Number or Pin Number");break;
+	                    }
+	                    break;
+	                }
+	                //check atm balance
+	                case 3:
+	                {
+	                    int curAtmBal=aDb.getBalAmt();
+	                    if(curAtmBal<=0){
+	                        System.out.println("No Fund");
+	                        continue;
+	                    }
+	                    else{
+	                        System.out.println("============= Current ATM Balance ==========");
+	                        System.out.println("Denomination            Number  Value       ");
+	                        System.out.println("2000                    "+denom.getTwoThousand()+"       "+2000*denom.getTwoThousand());
+	                        System.out.println("500                     "+denom.getFiveHundred()+"       "+500*denom.getFiveHundred());
+	                        System.out.println("100                     "+denom.getOneHundred()+"        "+100*denom.getOneHundred());
+	                        System.out.println("Amount available in ATM = Rs. "+aDb.getBalAmt());
+	                    }
+	                    break;
+	                }
+	                default:
+	                  {
+	                      System.out.println("Please Enter valid option...");
+	                  }
+                	}
+                break;
+                }
+                //for Bank process
+                case 2:{
+                	System.out.println("========================");
+                	System.out.println("1. Create Account\n2. Transfer\n3. Check Account Balance\n4. Display All Customer Details\n5. Deposit");
+                	System.out.println("========================");
+                	int ch2=sc.nextInt();
+                	sc.nextLine();
+                	switch(ch2) {
+                	//for creating a account
+		                case 1:
+		                {
+		                    System.out.println("========= Create Savings Account =========");
+		                    System.out.println("Enter the Account Number : ");
+		                    String accNum=sc.nextLine();
+		                    System.out.println("Enter the Name : ");
+		                    String name=sc.nextLine();
+		                    System.out.println("Enter the Pin Number : ");
+		                    String pin=sc.nextLine();
+		                    System.out.println("Enter the Amount to Deposit : ");
+		                    int accBal=sc.nextInt();
+		                    if(accBal>=500){
+		                        CustDb custDb=new CustDb(accNum,name, pin, accBal);
+		                        db.put(accNum, custDb);
+		                    }
+		                    else{
+		                        System.out.println("Minimum Balance Must be 500 or above");
+		                        break;
+		                    }
+		                    System.out.println("Account Created");
+		                    
+		                    break;
+		                }
+		                //for transfer money
+		                case 2:
+		                {
+		                    System.out.println("=========== Money Transfer ==============");
+		
+		                    System.out.println("Enter the Account Number : ");
+		                    String fromAcc=sc.next();
+		                    System.out.println("Enter the Pin Number : ");
+		                    String fromPin=sc.next();
+		                    if(cust.validAccNum(fromAcc, db)&&cust.validPin(fromAcc, fromPin, db)){
+		                        System.out.println("Enter the Account Number to make Transfer : ");
+		                        String toAcc=sc.next();
+		                        System.out.println("Enter the Amount to Transfer : ");
+		                        int transAmt=sc.nextInt();
+		                        cust.transAmt(fromAcc, toAcc, transAmt, db);
+		                    }
+		                    else{
+		                        System.out.println("Invalid Account or Pin Number");
+		                        break;
+		                    }
+		                    break;
+		                }
+		                //for check the account balance
+		                case 3:
+		                {
+		                    System.out.println("=========== Check Account Balance =========");
+		
+		                    System.out.println("Enter the Account Number : ");
+		                    String accNum=sc.nextLine();
+		                    System.out.println("Enter the Pin Number : ");
+		                    String pin=sc.nextLine();
+		                    if(cust.validAccNum(accNum, db)&&cust.validPin(accNum, pin, db)){
+		                        System.out.println("AccNo  Account Holder    PinNumber Account Balance");
+		                        System.out.println(accNum+"        "+db.get(accNum).getName()+"        "+pin+"        "+db.get(accNum).getAccBal());
+		                    }
+		                    else{
+		                        System.out.println("Invalid Account or Pin Number");
+		                        break;
+		                    }
+		                    break;
+		                }
+		                //for customer details
+		                case 4:
+		                {
+		                    System.out.println("=================== Customer Details ===================");
+		                    System.out.println("AccNo    Account Holder    Pin Number    Account Balance");
+		                    System.out.println("========================================================");
+		                    for(Map.Entry<String, CustDb> entry: db.entrySet()){
+		                        System.out.println(entry.getValue().getAccNum()+"       "+entry.getValue().getName()+"        "+entry.getValue().getPin()+"        "+entry.getValue().getAccBal());
+		                    }
+		                }
+		                //for deposit amount
+		                case 5:
+		                {
+		                    System.out.println("=========== Deposit =======");
+		                    System.out.println("Enter the Account Number : ");
+		                    System.out.println("===========================");
+		                    String accNum=sc.next();
+		                    if(cust.validAccNum(accNum, db)){
+		                        System.out.println("Enter the Amount : ");
+		                        int deptAmt=sc.nextInt();
+		                        db.get(accNum).dept(accNum, deptAmt, db);
+		                        System.out.println("Your Current Account Balance = Rs. "+db.get(accNum).getAccBal());
+		                    }
+		                    else{
+		                        System.out.println("Enter valid Account Number");
+		                        break;
+		                    }
+		                    break;
+		                }
+		                default:
+		                  {
+		                      System.out.println("Enter valid input");
+		                  }
+		                }
+		                break;
+                		}
+                	}
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+}
+
+
+
